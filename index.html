@@ -73,7 +73,6 @@
             position: relative;
         }
         
-        /* Botão de Tema */
         .theme-toggle {
             position: absolute;
             top: 20px;
@@ -214,6 +213,12 @@
             font-weight: 700;
         }
         
+        .installments-list .payment-date-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .installments-list .payment-date {
             font-weight: 700;
             color: var(--success-text);
@@ -222,6 +227,21 @@
         .installments-list .date-not-found {
             font-weight: 700;
             color: var(--error-text);
+        }
+
+        .copy-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .copy-btn:hover {
+            opacity: 0.8;
         }
 
         .dates-info {
@@ -318,7 +338,6 @@
     </div>
 
     <script>
-        // Suas novas datas personalizadas
         const allowedPaymentDates = [
             '2025-07-03','2025-07-10','2025-07-17','2025-07-24','2025-07-31','2025-08-07','2025-08-14','2025-08-21','2025-08-28','2025-09-04','2025-09-11','2025-09-18','2025-09-25','2025-10-02','2025-10-09','2025-10-16','2025-10-23','2025-10-30','2025-11-06','2025-11-13','2025-11-19','2025-11-27','2025-12-04','2025-12-11','2025-12-18','2025-12-23','2025-12-30',
         ];
@@ -356,6 +375,40 @@
             resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
             
             setTimeout(() => resultDiv.classList.add('show'), 10);
+        }
+
+        function copyToClipboard(textToCopy) {
+            return new Promise((resolve, reject) => {
+                navigator.clipboard.writeText(textToCopy).then(resolve).catch(err => {
+                    console.warn('Modern copy failed, trying fallback.', err);
+                    try {
+                        const tempTextarea = document.createElement('textarea');
+                        tempTextarea.value = textToCopy;
+                        document.body.appendChild(tempTextarea);
+                        tempTextarea.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(tempTextarea);
+                        resolve();
+                    } catch (fallbackErr) {
+                        console.error('Fallback copy failed.', fallbackErr);
+                        reject(fallbackErr);
+                    }
+                });
+            });
+        }
+
+        async function copyDate(buttonElement, dateString) {
+            const originalText = buttonElement.textContent;
+            try {
+                await copyToClipboard(dateString);
+                buttonElement.textContent = '✅';
+            } catch (error) {
+                buttonElement.textContent = '❌';
+            } finally {
+                setTimeout(() => {
+                    buttonElement.textContent = originalText;
+                }, 1500);
+            }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -439,15 +492,29 @@
                     return;
                 }
                 
-                const planHtml = installmentsPlan.map(item => `
-                    <li>
-                        <span class="installment-number">${item.installment}ª Parcela (Venc: ${formatDateForDisplay(item.dueDate)})</span>
-                        ${item.paymentDate 
-                            ? `<span class="payment-date">Pagar até: ${formatDateForDisplay(item.paymentDate)}</span>`
-                            : `<span class="date-not-found">Data não disponível</span>`
-                        }
-                    </li>
-                `).join('');
+                const planHtml = installmentsPlan.map(item => {
+                    const formattedDueDate = formatDateForDisplay(item.dueDate);
+                    let paymentInfoHtml = '';
+
+                    if (item.paymentDate) {
+                        const formattedPaymentDate = formatDateForDisplay(item.paymentDate);
+                        paymentInfoHtml = `
+                            <div class="payment-date-wrapper">
+                                <span class="payment-date">Pagar até: ${formattedPaymentDate}</span>
+                                <button type="button" class="copy-btn" onclick="copyDate(this, '${formattedPaymentDate}')">Copiar</button>
+                            </div>
+                        `;
+                    } else {
+                        paymentInfoHtml = `<span class="date-not-found">Data não disponível</span>`;
+                    }
+
+                    return `
+                        <li>
+                            <span class="installment-number">${item.installment}ª Parcela (Venc: ${formattedDueDate})</span>
+                            ${paymentInfoHtml}
+                        </li>
+                    `;
+                }).join('');
 
                 showResult(`
                     ✅ <strong>Plano de Pagamento Analisado!</strong>
@@ -455,7 +522,6 @@
                 `, allDatesFound);
             });
 
-            // --- LÓGICA PARA TEMA ESCURO E ASSINATURA ---
             themeToggle.addEventListener('click', () => {
                 body.classList.toggle('dark-mode');
                 if (body.classList.contains('dark-mode')) {
@@ -478,10 +544,9 @@
             }
 
             function setSignature() {
-                document.getElementById('signature').textContent = `Feito por HAlexandre em 30/07/2025 às 20:56`;
+                document.getElementById('signature').textContent = `Feito por HAlexandre em 30/07/2025 às 21:06`;
             }
 
-            // Inicializar
             loadTheme();
             setSignature();
         });
