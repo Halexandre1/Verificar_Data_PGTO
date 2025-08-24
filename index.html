@@ -1,555 +1,287 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Verificador de Pagamento com Parcelamento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            /* --- Variáveis de Cores (Tema Claro) --- */
-            --bg-grad-start: #667eea;
-            --bg-grad-end: #764ba2;
-            --container-bg: rgba(255, 255, 255, 0.98);
-            --text-primary: #333;
-            --text-secondary: #666;
-            --input-bg: #f8f9fa;
-            --input-border: #e1e5e9;
-            --accent-color: #667eea;
-            --success-bg: #e8f5e9;
-            --success-text: #2e7d32;
-            --success-border: #c8e6c9;
-            --error-bg: #ffebee;
-            --error-text: #c62828;
-            --error-border: #ffcdd2;
-            --footer-text: #777;
+        body { 
+            font-family: 'Inter', sans-serif; 
         }
-
-        /* --- Tema Escuro --- */
-        body.dark-mode {
-            --bg-grad-start: #2c3e50;
-            --bg-grad-end: #4b6cb7;
-            --container-bg: rgba(44, 62, 80, 0.9);
-            --text-primary: #ecf0f1;
-            --text-secondary: #bdc3c7;
-            --input-bg: #2c3e50;
-            --input-border: #566573;
-            --accent-color: #8293ff;
-            --success-bg: #1e4620;
-            --success-text: #a5d6a7;
-            --success-border: #2e7d32;
-            --error-bg: #4c1113;
-            --error-text: #ef9a9a;
-            --error-border: #c62828;
-            --footer-text: #95a5a6;
+        .dates-list {
+            transition: max-height 0.4s ease-out, opacity 0.3s ease-in-out, margin-top 0.4s ease-out;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        #toggleIcon {
+            transition: transform 0.3s ease;
         }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: linear-gradient(135deg, var(--bg-grad-start) 0%, var(--bg-grad-end) 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            transition: background 0.4s ease;
+        .is-open #toggleIcon {
+            transform: rotate(90deg);
         }
-
-        .container {
-            background: var(--container-bg);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: clamp(25px, 5vw, 40px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        
-        .theme-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--input-bg);
-            border: 1px solid var(--input-border);
-            color: var(--text-secondary);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        .theme-toggle:hover {
-            transform: scale(1.1);
-        }
-
-        h1 {
-            color: var(--text-primary);
-            margin-bottom: 10px;
-            font-size: clamp(1.8rem, 5vw, 2rem);
-            font-weight: 700;
-        }
-
-        .subtitle {
-            color: var(--text-secondary);
-            margin-bottom: 30px;
-            font-size: 1rem;
-        }
-
-        .form-group {
-            margin-bottom: 25px;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-primary);
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        input[type="date"],
-        select {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid var(--input-border);
-            border-radius: 10px;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: var(--input-bg);
-            color: var(--text-primary);
-            font-family: inherit;
-        }
-
-        input[type="date"]:focus,
-        select:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
-            background: var(--container-bg);
-        }
-
-        .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 10px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-top: 10px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-
-        .result {
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 25px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            transition: all 0.4s ease;
-            opacity: 0;
-            transform: translateY(20px);
-            line-height: 1.5;
-        }
-
         .result.show {
             opacity: 1;
             transform: translateY(0);
-        }
-
-        .result.success {
-            background-color: var(--success-bg);
-            color: var(--success-text);
-            border: 1px solid var(--success-border);
-        }
-
-        .result.error {
-            background-color: var(--error-bg);
-            color: var(--error-text);
-            border: 1px solid var(--error-border);
-        }
-        
-        .installments-list {
-            list-style: none;
-            padding: 0;
-            margin-top: 15px;
-            text-align: left;
-        }
-
-        .installments-list li {
-            background: var(--input-bg);
-            color: var(--text-primary);
-            padding: 10px 15px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.95rem;
-            border-left: 3px solid var(--accent-color);
-        }
-
-        .installments-list .installment-number {
-            font-weight: 700;
-        }
-        
-        .installments-list .payment-date-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .installments-list .payment-date {
-            font-weight: 700;
-            color: var(--success-text);
-        }
-        
-        .installments-list .date-not-found {
-            font-weight: 700;
-            color: var(--error-text);
-        }
-
-        .copy-btn {
-            background: var(--accent-color);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            padding: 5px 10px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .copy-btn:hover {
-            opacity: 0.8;
-        }
-
-        .dates-info {
-            background: var(--input-bg);
-            border-radius: 10px;
-            margin-bottom: 25px;
-            border-left: 4px solid var(--accent-color);
-            text-align: left;
-            padding: 15px 20px;
-        }
-
-        .dates-info h3 {
-            color: var(--text-primary);
-            font-size: 1.1rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        #toggleIcon {
-            transition: transform 0.3s ease;
-            font-size: 1rem;
-        }
-
-        .dates-list {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.6;
-            max-height: 0;
-            overflow: hidden;
-            opacity: 0;
-            transition: max-height 0.4s ease-out, opacity 0.3s ease-in-out, margin-top 0.4s ease-out;
-            margin-top: 0;
-        }
-        
-        .dates-info.is-open .dates-list {
-            max-height: 200px;
-            opacity: 1;
-            margin-top: 15px;
-        }
-
-        .dates-info.is-open #toggleIcon {
-            transform: rotate(90deg);
-        }
-
-        .date-highlight {
-            background: var(--accent-color);
-            color: white;
-            padding: 3px 8px;
-            border-radius: 5px;
-            font-weight: 600;
-        }
-
-        footer {
-            text-align: center;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 1px solid var(--input-border);
-            font-size: 14px;
-            color: var(--footer-text);
+            transition: all 0.4s ease;
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <button class="theme-toggle" id="themeToggle" aria-label="Alternar tema">🌙</button>
+<body class="bg-slate-100 dark:bg-slate-900 flex items-center justify-center min-h-screen p-4">
 
-        <h1>📋 Verificador de Pagamento</h1>
-        <p class="subtitle">Informe os vencimentos e encontre as datas corretas para pagamento</p>
+    <div class="container bg-white dark:bg-slate-800 p-6 rounded-xl shadow-2xl w-full max-w-md">
+        <header class="mb-6 flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <img src="https://raw.githubusercontent.com/Halexandre1/PDF_PRO/main/HERBERT.jpg" alt="Logótipo" class="w-12 h-12 rounded-full object-cover border-2 border-indigo-200 dark:border-indigo-800">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-800 dark:text-white text-left">Verificador de Pagamento</h1>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm text-left">Encontre as datas corretas</p>
+                </div>
+            </div>
+            <button id="themeToggle" class="flex-shrink-0 w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center transition-transform hover:scale-110" aria-label="Alternar tema">🌙</button>
+        </header>
         
-        <div class="dates-info">
-            <h3 id="toggleDatesHeader">
+        <div id="datesInfo" class="bg-slate-50 dark:bg-slate-700/50 rounded-lg mb-6 border-l-4 border-indigo-500">
+            <h3 id="toggleDatesHeader" class="p-4 font-semibold text-slate-700 dark:text-slate-200 cursor-pointer flex justify-between items-center">
                 <span>🗓️ Datas Permitidas para Pagamento</span>
-                <span id="toggleIcon">▶</span>
+                <span id="toggleIcon" class="transform transition-transform">▶</span>
             </h3>
-            <div class="dates-list" id="datesList"></div>
+            <div id="datesList" class="dates-list max-h-0 opacity-0 overflow-hidden px-4"></div>
         </div>
 
         <form id="paymentForm">
-            <div class="form-group">
-                <label for="installments">🔢 Número de Parcelas:</label>
-                <select id="installments"></select>
+            <div class="mb-5">
+                <label for="installments" class="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">🔢 Número de Parcelas:</label>
+                <select id="installments" class="w-full p-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"></select>
             </div>
 
-            <div id="installments-inputs-container"></div>
+            <div id="installments-inputs-container" class="space-y-4"></div>
             
-            <button type="submit" class="btn">🔍 Consultar Datas</button>
+            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition-colors mt-6">🔍 Consultar Datas</button>
         </form>
 
-        <div id="result" class="result"></div>
+        <div id="result" class="result opacity-0 transform translateY-5 mt-6"></div>
         
-        <footer id="signature"></footer>
+        <footer id="signature" class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 text-center text-sm text-slate-500 dark:text-slate-400"></footer>
     </div>
 
     <script>
-        const allowedPaymentDates = [
+    /**
+     * @file Verificador de Pagamento - Versão Refatorada
+     * @author HAlexandre
+     * @version 2.2.0
+     */
+
+    // --- Módulo de Lógica de Pagamento ---
+    const PaymentLogic = {
+        allowedPaymentDates: [
             '2025-07-03','2025-07-10','2025-07-17','2025-07-24','2025-07-31','2025-08-07','2025-08-14','2025-08-21','2025-08-28','2025-09-04','2025-09-11','2025-09-18','2025-09-25','2025-10-02','2025-10-09','2025-10-16','2025-10-23','2025-10-30','2025-11-06','2025-11-13','2025-11-19','2025-11-27','2025-12-04','2025-12-11','2025-12-18','2025-12-23','2025-12-30',
-        ];
+        ],
 
-        function parseDateAsUTC(dateString) {
+        parseDateAsUTC(dateString) {
             return new Date(dateString + 'T00:00:00Z');
-        }
+        },
 
-        function formatDateForDisplay(dateString) {
-            const date = parseDateAsUTC(dateString);
-            return date.toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                timeZone: 'UTC'
-            });
+        findPaymentDate(dueDateString) {
+            const dueDateUTC = this.parseDateAsUTC(dueDateString);
+            const validDates = this.allowedPaymentDates
+                .filter(dateString => this.parseDateAsUTC(dateString) <= dueDateUTC)
+                .sort()
+                .reverse();
+            return validDates.length > 0 ? validDates[0] : null;
         }
+    };
+
+    // --- Módulo de UI ---
+    const UI = {
+        dom: {
+            paymentForm: document.getElementById('paymentForm'),
+            installmentsSelect: document.getElementById('installments'),
+            inputsContainer: document.getElementById('installments-inputs-container'),
+            datesList: document.getElementById('datesList'),
+            toggleDatesHeader: document.getElementById('toggleDatesHeader'),
+            themeToggle: document.getElementById('themeToggle'),
+            body: document.body,
+            result: document.getElementById('result'),
+            signature: document.getElementById('signature')
+        },
         
-        function findPaymentDate(dueDateString) {
-            const dueDateUTC = parseDateAsUTC(dueDateString);
-            const validDates = allowedPaymentDates.filter(dateString => {
-                const allowedDateUTC = parseDateAsUTC(dateString);
-                return allowedDateUTC <= dueDateUTC;
-            });
+        formatDateForDisplay(dateString) {
+            const date = PaymentLogic.parseDateAsUTC(dateString);
+            return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'UTC' });
+        },
 
-            if (validDates.length === 0) return null;
-
-            validDates.sort().reverse();
-            return validDates[0];
-        }
-
-        function showResult(content, isSuccess) {
-            const resultDiv = document.getElementById('result');
-            resultDiv.innerHTML = content;
-            resultDiv.className = `result ${isSuccess ? 'success' : 'error'}`;
-            
-            setTimeout(() => resultDiv.classList.add('show'), 10);
-        }
-
-        function copyToClipboard(textToCopy) {
-            return new Promise((resolve, reject) => {
-                navigator.clipboard.writeText(textToCopy).then(resolve).catch(err => {
-                    console.warn('Modern copy failed, trying fallback.', err);
-                    try {
-                        const tempTextarea = document.createElement('textarea');
-                        tempTextarea.value = textToCopy;
-                        document.body.appendChild(tempTextarea);
-                        tempTextarea.select();
-                        document.execCommand('copy');
-                        document.body.removeChild(tempTextarea);
-                        resolve();
-                    } catch (fallbackErr) {
-                        console.error('Fallback copy failed.', fallbackErr);
-                        reject(fallbackErr);
-                    }
-                });
-            });
-        }
-
-        async function copyDate(buttonElement, dateString) {
-            const originalText = buttonElement.textContent;
-            try {
-                await copyToClipboard(dateString);
-                buttonElement.textContent = '✅';
-            } catch (error) {
-                buttonElement.textContent = '❌';
-            } finally {
-                setTimeout(() => {
-                    buttonElement.textContent = originalText;
-                }, 1500);
+        generateInstallmentInputs(count) {
+            this.dom.inputsContainer.innerHTML = '';
+            for (let i = 1; i <= count; i++) {
+                this.dom.inputsContainer.innerHTML += `
+                    <div class="form-group">
+                        <label for="dueDate-${i}" class="block mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">📅 Vencimento da ${i}ª Parcela:</label>
+                        <input type="date" id="dueDate-${i}" required class="w-full p-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    </div>
+                `;
             }
-        }
+        },
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const paymentForm = document.getElementById('paymentForm');
-            const installmentsSelect = document.getElementById('installments');
-            const inputsContainer = document.getElementById('installments-inputs-container');
-            const datesListEl = document.getElementById('datesList');
-            const toggleDatesHeader = document.getElementById('toggleDatesHeader');
-            const themeToggle = document.getElementById('themeToggle');
-            const body = document.body;
+        showResult(content, isSuccess) {
+            this.dom.result.innerHTML = content;
+            this.dom.result.className = `result p-4 rounded-lg text-sm font-semibold ${isSuccess ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'}`;
+            setTimeout(() => this.dom.result.classList.add('show'), 10);
+        },
 
-            function generateInstallmentInputs(count) {
-                inputsContainer.innerHTML = '';
-                for (let i = 1; i <= count; i++) {
-                    const inputGroup = document.createElement('div');
-                    inputGroup.className = 'form-group';
-
-                    const label = document.createElement('label');
-                    label.htmlFor = `dueDate-${i}`;
-                    label.textContent = `📅 Vencimento da ${i}ª Parcela:`;
-
-                    const input = document.createElement('input');
-                    input.type = 'date';
-                    input.id = `dueDate-${i}`;
-                    input.required = true;
-
-                    inputGroup.appendChild(label);
-                    inputGroup.appendChild(input);
-                    inputsContainer.appendChild(inputGroup);
+        populateAllowedDates() {
+            const datesByMonth = PaymentLogic.allowedPaymentDates.reduce((acc, dateString) => {
+                const date = PaymentLogic.parseDateAsUTC(dateString);
+                const monthYear = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(date);
+                const day = date.getUTCDate();
+                
+                if (!acc[monthYear]) {
+                    acc[monthYear] = [];
                 }
-            }
+                acc[monthYear].push(day);
+                return acc;
+            }, {});
 
+            let html = '<div class="pb-4 space-y-4">';
+            for (const month in datesByMonth) {
+                html += `<div>
+                           <h4 class="text-sm font-bold text-slate-600 dark:text-slate-300 mb-2 capitalize">${month}</h4>
+                           <div class="flex flex-wrap gap-2">
+                             ${datesByMonth[month].map(day => `<span class="inline-block bg-indigo-100 dark:bg-indigo-900/50 text-indigo-800 dark:text-indigo-300 font-semibold w-8 h-8 flex items-center justify-center rounded-full">${day}</span>`).join('')}
+                           </div>
+                         </div>`;
+            }
+            html += '</div>';
+            this.dom.datesList.innerHTML = html;
+        },
+
+        loadTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                this.dom.themeToggle.textContent = '☀️';
+            } else {
+                this.dom.themeToggle.textContent = '🌙';
+            }
+        },
+
+        setSignature() {
+            this.dom.signature.innerHTML = `<p>Feito por HAlexandre © ${new Date().getFullYear()}</p>`;
+        }
+    };
+
+    // --- Módulo Principal da Aplicação ---
+    const App = {
+        init() {
+            this.setupEventListeners();
+            this.populateInstallmentsSelect();
+            UI.generateInstallmentInputs(1);
+            UI.populateAllowedDates();
+            UI.loadTheme();
+            UI.setSignature();
+        },
+
+        populateInstallmentsSelect() {
             for (let i = 1; i <= 10; i++) {
-                const option = document.createElement('option');
-                option.value = i;
-                option.textContent = `${i}x`;
-                installmentsSelect.appendChild(option);
+                UI.dom.installmentsSelect.innerHTML += `<option value="${i}">${i}x</option>`;
             }
-            generateInstallmentInputs(1);
+        },
 
-            installmentsSelect.addEventListener('change', (e) => {
-                generateInstallmentInputs(parseInt(e.target.value, 10));
+        async copyDate(buttonElement, dateString) {
+            const originalText = buttonElement.innerHTML;
+            try {
+                await navigator.clipboard.writeText(dateString);
+                buttonElement.innerHTML = '<i class="fas fa-check"></i>';
+            } catch (error) {
+                buttonElement.innerHTML = '<i class="fas fa-times"></i>';
+            } finally {
+                setTimeout(() => { buttonElement.innerHTML = originalText; }, 1500);
+            }
+        },
+
+        setupEventListeners() {
+            UI.dom.installmentsSelect.addEventListener('change', (e) => {
+                UI.generateInstallmentInputs(parseInt(e.target.value, 10));
             });
 
-            datesListEl.innerHTML = allowedPaymentDates
-                .map(date => `<span class="date-highlight">${formatDateForDisplay(date)}</span>`)
-                .join(' • ');
-
-            toggleDatesHeader.addEventListener('click', () => {
-                toggleDatesHeader.parentElement.classList.toggle('is-open');
+            UI.dom.toggleDatesHeader.addEventListener('click', () => {
+                const container = UI.dom.toggleDatesHeader.parentElement;
+                container.classList.toggle('is-open');
+                if (container.classList.contains('is-open')) {
+                    UI.dom.datesList.style.maxHeight = UI.dom.datesList.scrollHeight + "px";
+                    UI.dom.datesList.style.opacity = '1';
+                } else {
+                    UI.dom.datesList.style.maxHeight = '0';
+                    UI.dom.datesList.style.opacity = '0';
+                }
             });
 
-            paymentForm.addEventListener('submit', function(e) {
+            UI.dom.paymentForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const installmentsValue = parseInt(installmentsSelect.value, 10);
+                const installmentsValue = parseInt(UI.dom.installmentsSelect.value, 10);
                 let installmentsPlan = [];
-                let allDatesFound = true;
                 let allFieldsFilled = true;
 
                 for (let i = 1; i <= installmentsValue; i++) {
                     const dueDateInput = document.getElementById(`dueDate-${i}`);
-                    const dueDateValue = dueDateInput.value;
-
-                    if (!dueDateValue) {
+                    if (!dueDateInput.value) {
                         allFieldsFilled = false;
                         break;
                     }
-
-                    const paymentDate = findPaymentDate(dueDateValue);
-                    if (!paymentDate) allDatesFound = false;
-                    
+                    const paymentDate = PaymentLogic.findPaymentDate(dueDateInput.value);
                     installmentsPlan.push({
                         installment: i,
-                        dueDate: dueDateValue,
+                        dueDate: dueDateInput.value,
                         paymentDate: paymentDate,
                     });
                 }
 
                 if (!allFieldsFilled) {
-                    showResult('⚠️ Por favor, preencha a data de vencimento de todas as parcelas.', false);
+                    UI.showResult('⚠️ Por favor, preencha a data de vencimento de todas as parcelas.', false);
                     return;
                 }
                 
                 const planHtml = installmentsPlan.map(item => {
-                    const formattedDueDate = formatDateForDisplay(item.dueDate);
+                    const formattedDueDate = UI.formatDateForDisplay(item.dueDate);
                     let paymentInfoHtml = '';
-
                     if (item.paymentDate) {
-                        const formattedPaymentDate = formatDateForDisplay(item.paymentDate);
-                        paymentInfoHtml = `
-                            <div class="payment-date-wrapper">
-                                <span class="payment-date">Pagar até: ${formattedPaymentDate}</span>
-                                <button type="button" class="copy-btn" onclick="copyDate(this, '${formattedPaymentDate}')">Copiar</button>
-                            </div>
-                        `;
+                        const formattedPaymentDate = UI.formatDateForDisplay(item.paymentDate);
+                        paymentInfoHtml = `<div class="flex items-center gap-2">
+                            <span class="font-semibold text-green-700 dark:text-green-400">Pagar em: ${formattedPaymentDate}</span>
+                            <button type="button" class="copy-btn bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-1 px-2 rounded" onclick="App.copyDate(this, '${formattedPaymentDate}')"><i class="fas fa-copy"></i></button>
+                        </div>`;
                     } else {
-                        paymentInfoHtml = `<span class="date-not-found">Data não disponível</span>`;
+                        paymentInfoHtml = `<span class="font-semibold text-red-600 dark:text-red-400">Data não disponível</span>`;
                     }
-
-                    return `
-                        <li>
-                            <span class="installment-number">${item.installment}ª Parcela (Venc: ${formattedDueDate})</span>
-                            ${paymentInfoHtml}
-                        </li>
-                    `;
+                    return `<li class="flex justify-between items-center bg-slate-100 dark:bg-slate-700 p-3 rounded-lg">
+                        <span class="font-medium text-slate-600 dark:text-slate-300">${item.installment}ª Parcela (Venc: ${formattedDueDate})</span>
+                        ${paymentInfoHtml}
+                    </li>`;
                 }).join('');
 
-                showResult(`
-                    ✅ <strong>Plano de Pagamento Analisado!</strong>
-                    <ul class="installments-list">${planHtml}</ul>
-                `, allDatesFound);
+                UI.showResult(`
+                    <h3 class="font-bold text-lg mb-3 text-slate-800 dark:text-white">Plano de Pagamento</h3>
+                    <ul class="space-y-2">${planHtml}</ul>
+                `, true);
             });
 
-            themeToggle.addEventListener('click', () => {
-                body.classList.toggle('dark-mode');
-                if (body.classList.contains('dark-mode')) {
-                    localStorage.setItem('theme', 'dark');
-                    themeToggle.textContent = '☀️';
-                } else {
-                    localStorage.setItem('theme', 'light');
-                    themeToggle.textContent = '🌙';
-                }
+            UI.dom.themeToggle.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                const isDark = document.documentElement.classList.contains('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                UI.dom.themeToggle.textContent = isDark ? '☀️' : '🌙';
             });
+        }
+    };
 
-            function loadTheme() {
-                const savedTheme = localStorage.getItem('theme');
-                if (savedTheme === 'dark') {
-                    body.classList.add('dark-mode');
-                    themeToggle.textContent = '☀️';
-                } else {
-                    themeToggle.textContent = '🌙';
-                }
-            }
+    // --- Ponto de Entrada ---
+    document.addEventListener('DOMContentLoaded', () => App.init());
+    
+    // Anexa a função de cópia ao objeto window para que possa ser chamada pelo onclick
+    window.App = App;
 
-            function setSignature() {
-                document.getElementById('signature').textContent = `Feito por HAlexandre em 30/07/2025 às 21:06`;
-            }
-
-            loadTheme();
-            setSignature();
-        });
     </script>
 </body>
 </html>
