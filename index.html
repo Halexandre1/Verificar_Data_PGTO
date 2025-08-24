@@ -9,6 +9,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+      // Configuração para habilitar o modo escuro baseado em classe no Tailwind CSS
+      tailwind.config = {
+        darkMode: 'class',
+      }
+    </script>
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
@@ -69,9 +75,9 @@
 
     <script>
     /**
-     * @file Verificador de Pagamento - Versão Refatorada
+     * @file Verificador de Pagamento - Versão Final
      * @author HAlexandre
-     * @version 2.2.0
+     * @version 2.3.0
      */
 
     // --- Módulo de Lógica de Pagamento ---
@@ -137,9 +143,7 @@
                 const monthYear = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(date);
                 const day = date.getUTCDate();
                 
-                if (!acc[monthYear]) {
-                    acc[monthYear] = [];
-                }
+                if (!acc[monthYear]) acc[monthYear] = [];
                 acc[monthYear].push(day);
                 return acc;
             }, {});
@@ -250,7 +254,7 @@
                         const formattedPaymentDate = UI.formatDateForDisplay(item.paymentDate);
                         paymentInfoHtml = `<div class="flex items-center gap-2">
                             <span class="font-semibold text-green-700 dark:text-green-400">Pagar em: ${formattedPaymentDate}</span>
-                            <button type="button" class="copy-btn bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-1 px-2 rounded" onclick="App.copyDate(this, '${formattedPaymentDate}')"><i class="fas fa-copy"></i></button>
+                            <button type="button" class="copy-btn bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-1 px-2 rounded" data-copy-date="${formattedPaymentDate}"><i class="fas fa-copy"></i></button>
                         </div>`;
                     } else {
                         paymentInfoHtml = `<span class="font-semibold text-red-600 dark:text-red-400">Data não disponível</span>`;
@@ -273,14 +277,20 @@
                 localStorage.setItem('theme', isDark ? 'dark' : 'light');
                 UI.dom.themeToggle.textContent = isDark ? '☀️' : '🌙';
             });
+
+            // Event listener para os botões de copiar usando delegação de eventos
+            UI.dom.result.addEventListener('click', (e) => {
+                const copyButton = e.target.closest('.copy-btn');
+                if (copyButton) {
+                    const dateToCopy = copyButton.dataset.copyDate;
+                    this.copyDate(copyButton, dateToCopy);
+                }
+            });
         }
     };
 
     // --- Ponto de Entrada ---
     document.addEventListener('DOMContentLoaded', () => App.init());
-    
-    // Anexa a função de cópia ao objeto window para que possa ser chamada pelo onclick
-    window.App = App;
 
     </script>
 </body>
